@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
+/// LibraryScreen
+/// Displays user's music library.
+/// Includes:
+/// - Library categories
+/// - Recently added albums grid
 class LibraryScreen extends StatelessWidget {
+
   const LibraryScreen({super.key});
 
   static const Color primaryBlue = Color(0xFF1826F8);
@@ -9,41 +15,50 @@ class LibraryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Scaffold(
+
       backgroundColor: const Color(0xFFF6F7FB),
 
+      /// App Bar
       appBar: AppBar(
+
         backgroundColor: Colors.transparent,
         elevation: 0,
 
         title: const Text(
           "Library",
+
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 26,
             color: Colors.black87,
-            letterSpacing: .3,
           ),
         ),
 
         actions: [
 
+          /// Edit Button
           TextButton(
-            onPressed: () {},
+
+            onPressed: () {
+              // TODO: Edit functionality
+            },
 
             child: const Text(
+
               "Edit",
+
               style: TextStyle(
                 color: primaryBlue,
                 fontWeight: FontWeight.w600,
-                fontSize: 15,
               ),
             ),
           ),
 
-          const SizedBox(width: 10)
+          const SizedBox(width: 10),
         ],
       ),
 
+      /// Body
       body: ListView(
 
         padding: const EdgeInsets.only(
@@ -60,8 +75,11 @@ class LibraryScreen extends StatelessWidget {
           _buildLibraryItem(Icons.person,'Artists'),
           _buildLibraryItem(Icons.download_done,'Downloaded'),
 
+          /// Recently Added Title
           const Padding(
-            padding: EdgeInsets.fromLTRB(
+
+            padding:
+                EdgeInsets.fromLTRB(
               18,
               30,
               16,
@@ -69,20 +87,27 @@ class LibraryScreen extends StatelessWidget {
             ),
 
             child: Text(
+
               "Recently Added",
 
               style: TextStyle(
+
                 fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+
+                fontWeight:
+                    FontWeight.bold,
+
+                color:
+                    Colors.black87,
               ),
             ),
           ),
 
-          /// Album Grid
+          /// Albums Grid
           GridView.builder(
 
             shrinkWrap: true,
+
             physics:
                 const NeverScrollableScrollPhysics(),
 
@@ -117,6 +142,7 @@ class LibraryScreen extends StatelessWidget {
 
                   /// Album Card
                   Expanded(
+
                     child: Container(
 
                       decoration:
@@ -129,7 +155,9 @@ class LibraryScreen extends StatelessWidget {
                             const LinearGradient(
 
                           colors: [
+
                             Color(0xFF404040),
+
                             Color(0xFF1B1B1B),
                           ],
 
@@ -174,6 +202,7 @@ class LibraryScreen extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   const Text(
+
                     "Album Name",
 
                     maxLines: 1,
@@ -193,6 +222,7 @@ class LibraryScreen extends StatelessWidget {
                   const SizedBox(height: 3),
 
                   const Text(
+
                     "Artist Name",
 
                     style: TextStyle(
@@ -211,11 +241,10 @@ class LibraryScreen extends StatelessWidget {
     );
   }
 
-  /// Library Menu Card
+  /// Library Item Builder
   Widget _buildLibraryItem(
       IconData icon,
-      String title,
-      ){
+      String title){
 
     return Padding(
 
@@ -231,8 +260,6 @@ class LibraryScreen extends StatelessWidget {
 
         color: Colors.white,
 
-        shadowColor: Colors.black12,
-
         shape:
             RoundedRectangleBorder(
 
@@ -245,7 +272,9 @@ class LibraryScreen extends StatelessWidget {
           borderRadius:
               BorderRadius.circular(14),
 
-          onTap: () {},
+          onTap: () {
+            // TODO Navigation
+          },
 
           child: ListTile(
 
