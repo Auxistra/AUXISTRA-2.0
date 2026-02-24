@@ -11,7 +11,7 @@ class ApiService {
         'Content-Type': 'application/json',
       };
 
-  // USER 
+  //USER 
 
   static Future<Map<String, dynamic>> syncUser(
       String uid, String email, String name) async {
