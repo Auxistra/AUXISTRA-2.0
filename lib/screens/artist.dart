@@ -14,6 +14,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
   bool _allowGlobalRemix = true;
 
   Map<String, dynamic>? _analytics;
+
   final String _mockUid = 'user_123'; // Replace with FirebaseAuth later
 
   @override
@@ -23,7 +24,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
   }
 
   Future<void> _fetchArtistStatus() async {
-    // Future backend check can go here
+    // Simulated check (keep structure for future backend integration)
     setState(() {});
   }
 
@@ -34,26 +35,24 @@ class _ArtistScreenState extends State<ArtistScreen> {
       await ApiService.upgradeToArtist(_mockUid);
       final data = await ApiService.getAnalytics(_mockUid);
 
-      if (!mounted) return;
-
       setState(() {
         _isArtist = true;
         _analytics = data;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Artist verification successful!')),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Upgrade failed: $e')),
-      );
-    } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Successfully upgraded to Artist!')),
+        );
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upgrade failed: $e')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -96,8 +95,8 @@ class _ArtistScreenState extends State<ArtistScreen> {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'Upload your music, manage stems, and collaborate with others. '
-                    'Unlock professional remixing tools and royalty analytics.',
+                    'Upload your music, manage stems, collaborate, '
+                    'and unlock professional remixing tools with royalty analytics.',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey),
                   ),
@@ -163,22 +162,19 @@ class _ArtistScreenState extends State<ArtistScreen> {
     return RefreshIndicator(
       onRefresh: () async {
         final data = await ApiService.getAnalytics(_mockUid);
-        if (!mounted) return;
         setState(() => _analytics = data);
       },
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _buildStatCard(
-            'Total Streams',
-            _analytics?['totalStreams']?.toString() ?? '0',
-            '+12%',
-          ),
+              'Total Streams',
+              _analytics?['totalStreams']?.toString() ?? '0',
+              '+12%'),
           _buildStatCard(
-            'Remix Royalties',
-            '\$${_analytics?['totalRevenue'] ?? '0'}',
-            '+8%',
-          ),
+              'Remix Royalties',
+              '\$${_analytics?['totalRevenue'] ?? '0'}',
+              '+8%'),
           _buildStatCard('Active Listeners', '---', '+5%'),
           const SizedBox(height: 24),
           const Text('Top Songs',
@@ -206,16 +202,13 @@ class _ArtistScreenState extends State<ArtistScreen> {
             Text(title, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 8),
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(value,
                     style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold)),
+                        fontSize: 26, fontWeight: FontWeight.bold)),
                 Text(growth,
-                    style:
-                        const TextStyle(color: Colors.green)),
+                    style: const TextStyle(color: Colors.green)),
               ],
             ),
           ],
