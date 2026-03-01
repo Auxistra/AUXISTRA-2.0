@@ -1,0 +1,94 @@
+import 'package:flutter/material.dart';
+
+class InteractiveProgressBar extends StatefulWidget {
+  final Duration position;
+  final Duration duration;
+  final Duration buffered;
+  final ValueChanged<Duration> onSeek;
+
+  const InteractiveProgressBar({
+    super.key,
+    required this.position,
+    required this.duration,
+    required this.buffered,
+    required this.onSeek,
+  });
+
+  @override
+  State<InteractiveProgressBar> createState() =>
+      _InteractiveProgressBarState();
+}
+
+class _InteractiveProgressBarState extends State<InteractiveProgressBar> {
+  bool _dragging = false;
+
+  double get _progress =>
+      widget.duration.inMilliseconds == 0
+          ? 0
+          : widget.position.inMilliseconds /
+              widget.duration.inMilliseconds;
+
+  double get _buffered =>
+      widget.duration.inMilliseconds == 0
+          ? 0
+          : widget.buffered.inMilliseconds /
+              widget.duration.inMilliseconds;
+
+  void _seek(double dx, double width) {
+    final ratio = (dx / width).clamp(0.0, 1.0);
+    final position = widget.duration * ratio;
+    widget.onSeek(position);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GestureDetector(
+          onHorizontalDragStart: (_) {
+            setState(() => _dragging = true);
+          },
+          onHorizontalDragUpdate: (details) {
+            _seek(details.localPosition.dx, constraints.maxWidth);
+          },
+          onHorizontalDragEnd: (_) {
+            setState(() => _dragging = false);
+          },
+          onTapDown: (details) {
+            _seek(details.localPosition.dx, constraints.maxWidth);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            height: _dragging ? 6 : 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[800],
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: Stack(
+              children: [
+                FractionallySizedBox(
+                  widthFactor: _buffered,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[600],
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+                FractionallySizedBox(
+                  widthFactor: _progress,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
