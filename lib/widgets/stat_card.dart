@@ -65,14 +65,21 @@ class _StatCardState extends State<StatCard>
         position: _slideAnimation,
         child: Card(
           margin: const EdgeInsets.only(bottom: 16),
-          color: const Color(0xFF2C2C2C),
-          elevation: 6,
-          shadowColor: Colors.black45,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(24), // more rounded
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
+          elevation: 12, // stronger shadow
+          shadowColor: Colors.black.withOpacity(0.4),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1F1F1F), Color(0xFF3A3A3A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -80,17 +87,18 @@ class _StatCardState extends State<StatCard>
                   widget.title,
                   style: const TextStyle(
                     color: Colors.grey,
-                    fontSize: 14,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       widget.value,
                       style: const TextStyle(
-                        fontSize: 26,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -101,19 +109,19 @@ class _StatCardState extends State<StatCard>
                           isPositive
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
-                          size: 18,
+                          size: 20,
                           color: isPositive
-                              ? Colors.green
-                              : Colors.red,
+                              ? Colors.greenAccent
+                              : Colors.redAccent,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
                         Text(
                           widget.growth,
                           style: TextStyle(
                             color: isPositive
-                                ? Colors.green
-                                : Colors.red,
-                            fontWeight: FontWeight.w600,
+                                ? Colors.greenAccent
+                                : Colors.redAccent,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],
