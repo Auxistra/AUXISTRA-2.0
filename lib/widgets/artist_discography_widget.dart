@@ -1,63 +1,45 @@
 import 'package:flutter/material.dart';
 
-class ArtistDiscographyScreen extends StatelessWidget {
-  final String artistName;
+class ArtistDiscographyWidget extends StatelessWidget {
+  final List<ReleaseItem> albums;
+  final List<ReleaseItem> singles;
+  final List<ReleaseItem> features;
 
-  const ArtistDiscographyScreen({
+  const ArtistDiscographyWidget({
     super.key,
-    required this.artistName,
+    required this.albums,
+    required this.singles,
+    required this.features,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        title: Text(
-          artistName,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 24,
-        ),
-        children: const [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        if (albums.isNotEmpty)
           _DiscographySection(
             title: "Albums",
-            items: [
-              ReleaseItem("Northern Lights", "2024"),
-              ReleaseItem("Fragments", "2022"),
-              ReleaseItem("Echo Patterns", "2020"),
-            ],
+            items: albums,
           ),
 
-          SizedBox(height: 32),
-
+        if (singles.isNotEmpty) ...[
+          const SizedBox(height: 32),
           _DiscographySection(
             title: "Singles",
-            items: [
-              ReleaseItem("Gravity", "2025"),
-              ReleaseItem("Fade Away", "2024"),
-              ReleaseItem("Blue Static", "2023"),
-              ReleaseItem("Night Pulse", "2022"),
-            ],
-          ),
-
-          SizedBox(height: 32),
-
-          _DiscographySection(
-            title: "Features",
-            items: [
-              ReleaseItem("Afterglow", "2024"),
-              ReleaseItem("Skyline Drive", "2023"),
-            ],
+            items: singles,
           ),
         ],
-      ),
+
+        if (features.isNotEmpty) ...[
+          const SizedBox(height: 32),
+          _DiscographySection(
+            title: "Features",
+            items: features,
+          ),
+        ],
+      ],
     );
   }
 }
@@ -94,8 +76,8 @@ class _DiscographySection extends StatelessWidget {
           itemCount: items.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            mainAxisSpacing: 18,
             crossAxisSpacing: 16,
+            mainAxisSpacing: 18,
             childAspectRatio: 0.9,
           ),
           itemBuilder: (context, index) {
