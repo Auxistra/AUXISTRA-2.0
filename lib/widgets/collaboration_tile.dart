@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class CollaborationTile extends StatefulWidget {
-
   final String name;
   final String project;
   final int delay;
@@ -15,12 +14,10 @@ class CollaborationTile extends StatefulWidget {
   });
 
   @override
-  State<CollaborationTile> createState() =>
-      _CollaborationTileState();
+  State<CollaborationTile> createState() => _CollaborationTileState();
 }
 
-class _CollaborationTileState
-    extends State<CollaborationTile>
+class _CollaborationTileState extends State<CollaborationTile>
     with SingleTickerProviderStateMixin {
 
   late AnimationController controller;
@@ -33,18 +30,17 @@ class _CollaborationTileState
 
     controller = AnimationController(
       vsync: this,
-      duration:
-          const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 600),
     );
 
-    fade = Tween(begin: 0.0, end: 1.0).animate(
+    fade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: controller,
         curve: Curves.easeOut,
       ),
     );
 
-    slide = Tween(
+    slide = Tween<Offset>(
       begin: const Offset(0, 0.25),
       end: Offset.zero,
     ).animate(
@@ -72,34 +68,37 @@ class _CollaborationTileState
 
     return FadeTransition(
       opacity: fade,
-
       child: SlideTransition(
         position: slide,
 
         child: Container(
-          padding:
-              const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 14), // small spacing
+          padding: const EdgeInsets.all(16),
 
           decoration: BoxDecoration(
-            color:
-                const Color(0xFF1C1C1E),
-            borderRadius:
-                BorderRadius.circular(14),
+            color: const Color(0xFF1C1C1E),
+            borderRadius: BorderRadius.circular(14),
+
+            // small shadow
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              )
+            ],
           ),
 
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
               Text(
                 widget.name,
-                style:
-                    const TextStyle(
+                style: const TextStyle(
                   fontSize: 17,
-                  fontWeight:
-                      FontWeight.w600,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
 
@@ -108,8 +107,7 @@ class _CollaborationTileState
               Text(
                 widget.project,
                 style: TextStyle(
-                  color:
-                      Colors.grey[400],
+                  color: Colors.grey[400],
                   fontSize: 14,
                 ),
               ),
@@ -120,25 +118,29 @@ class _CollaborationTileState
                 children: [
 
                   Expanded(
-                    child:
-                        OutlinedButton(
+                    child: OutlinedButton.icon(
                       onPressed: () {},
-                      child:
-                          const Text(
-                              'Decline'),
+                      icon: const Icon(Icons.close, size: 18),
+                      label: const Text('Decline'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
                     ),
                   ),
 
-                  const SizedBox(
-                      width: 10),
+                  const SizedBox(width: 10),
 
                   Expanded(
-                    child:
-                        ElevatedButton(
+                    child: ElevatedButton.icon(
                       onPressed: () {},
-                      child:
-                          const Text(
-                              'Accept'),
+                      icon: const Icon(Icons.check, size: 18),
+                      label: const Text('Accept'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
                     ),
                   ),
                 ],
