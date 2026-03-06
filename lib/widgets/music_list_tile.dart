@@ -1,50 +1,42 @@
 import 'package:flutter/material.dart';
 
-/// MiniPlayer widget
-/// Displays currently playing song with quick controls.
-/// Typically shown above the bottom navigation bar.
-class MiniPlayer extends StatelessWidget {
+class MusicListTile extends StatelessWidget {
   final String title;
   final String artist;
   final String? imageUrl;
-  final bool isPlaying;
   final VoidCallback? onTap;
-  final VoidCallback? onPlayPause;
-  final VoidCallback? onNext;
+  final VoidCallback? onMore;
 
-  const MiniPlayer({
+  const MusicListTile({
     super.key,
     required this.title,
     required this.artist,
     this.imageUrl,
-    required this.isPlaying,
     this.onTap,
-    this.onPlayPause,
-    this.onNext,
+    this.onMore,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      child: Container(
-        height: 64,
-        margin: const EdgeInsets.all(12),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1C1C1E),
-          borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 10,
         ),
         child: Row(
           children: [
-            /// Artwork
+
+            /// Album Art
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: Container(
-                width: 44,
-                height: 44,
+                width: 48,
+                height: 48,
                 color: const Color(0xFF2C2C2C),
                 child: imageUrl != null
                     ? Image.network(
@@ -55,14 +47,14 @@ class MiniPlayer extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
 
             /// Title + Artist
             Expanded(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+
                   Text(
                     title,
                     maxLines: 1,
@@ -72,13 +64,13 @@ class MiniPlayer extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
 
                   Text(
                     artist,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.grey[500],
                     ),
                   ),
@@ -86,21 +78,11 @@ class MiniPlayer extends StatelessWidget {
               ),
             ),
 
-            /// Play / Pause
+            /// More Button
             IconButton(
-              icon: Icon(
-                isPlaying ? Icons.pause : Icons.play_arrow,
-                size: 28,
-              ),
-              onPressed: onPlayPause,
+              icon: const Icon(Icons.more_vert),
+              onPressed: onMore,
             ),
-
-            /// Next
-            if (onNext != null)
-              IconButton(
-                icon: const Icon(Icons.skip_next),
-                onPressed: onNext,
-              ),
           ],
         ),
       ),
