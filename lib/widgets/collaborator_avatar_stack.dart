@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class CollaboratorAvatarStack extends StatelessWidget {
   final List<String> avatars;
   final double size;
+  //
 
   const CollaboratorAvatarStack({
     Key? key,
