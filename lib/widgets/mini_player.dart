@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// MiniPlayer widget
+/// Displays currently playing song with quick controls.
+/// Typically shown above the bottom navigation bar.
 class MiniPlayer extends StatelessWidget {
   final String title;
   final String artist;
@@ -36,7 +39,6 @@ class MiniPlayer extends StatelessWidget {
         ),
         child: Row(
           children: [
-
             /// Artwork
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
@@ -61,7 +63,6 @@ class MiniPlayer extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Text(
                     title,
                     maxLines: 1,
@@ -95,10 +96,11 @@ class MiniPlayer extends StatelessWidget {
             ),
 
             /// Next
-            IconButton(
-              icon: const Icon(Icons.skip_next),
-              onPressed: onNext,
-            ),
+            if (onNext != null)
+              IconButton(
+                icon: const Icon(Icons.skip_next),
+                onPressed: onNext,
+              ),
           ],
         ),
       ),

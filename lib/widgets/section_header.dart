@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// SectionHeader
+/// A reusable header used across the app for listing sections.
+/// Example: Trending Tracks, Your Mixes, Recommended for You
 class SectionHeader extends StatelessWidget {
   final String title;
   final String? actionText;
@@ -21,8 +24,7 @@ class SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-
-          /// Title
+          /// Section Title
           Text(
             title,
             style: theme.textTheme.titleLarge?.copyWith(

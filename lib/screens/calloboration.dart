@@ -1,67 +1,127 @@
 import 'package:flutter/material.dart';
 
-class CollaborationScreen extends StatelessWidget {
+class CollaborationScreen extends StatefulWidget {
   const CollaborationScreen({super.key});
+
+  @override
+  State<CollaborationScreen> createState() =>
+      _CollaborationScreenState();
+}
+
+class _CollaborationScreenState
+    extends State<CollaborationScreen>
+    with SingleTickerProviderStateMixin {
+
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+
+    _fadeAnimation =
+        Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOut,
+      ),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   Widget requestTile({
     required String name,
     required String project,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
+    return FadeTransition(
+      opacity: _fadeAnimation,
 
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C1C1E),
-        borderRadius: BorderRadius.circular(14),
-      ),
+      child: SlideTransition(
+        position: _slideAnimation,
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        child: Container(
+          padding: const EdgeInsets.all(16),
 
-        children: [
-
-          Text(
-            name,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-            ),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C1C1E),
+            borderRadius: BorderRadius.circular(14),
           ),
 
-          const SizedBox(height: 4),
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
 
-          Text(
-            project,
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 14,
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          Row(
             children: [
 
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {},
-                  child: const Text('Decline'),
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
 
-              const SizedBox(width: 10),
+              const SizedBox(height: 4),
 
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {},
-                  child: const Text('Accept'),
+              Text(
+                project,
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 14,
                 ),
               ),
 
+              const SizedBox(height: 14),
+
+              Row(
+                children: [
+
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {},
+                      child:
+                          const Text('Decline'),
+                    ),
+                  ),
+
+                  const SizedBox(width: 10),
+
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      child:
+                          const Text('Accept'),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -73,7 +133,8 @@ class CollaborationScreen extends StatelessWidget {
 
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 20),
 
           child: ListView(
             children: [
@@ -84,7 +145,8 @@ class CollaborationScreen extends StatelessWidget {
                 'Collaborations',
                 style: TextStyle(
                   fontSize: 34,
-                  fontWeight: FontWeight.w700,
+                  fontWeight:
+                      FontWeight.w700,
                   letterSpacing: -0.5,
                 ),
               ),
@@ -93,21 +155,24 @@ class CollaborationScreen extends StatelessWidget {
 
               requestTile(
                 name: 'Alex Rivera',
-                project: 'Synthwave Remix',
+                project:
+                    'Synthwave Remix',
               ),
 
               const SizedBox(height: 14),
 
               requestTile(
                 name: 'Luna Beats',
-                project: 'Vocal Collaboration',
+                project:
+                    'Vocal Collaboration',
               ),
 
               const SizedBox(height: 14),
 
               requestTile(
                 name: 'Nova Sound',
-                project: 'Drum Production',
+                project:
+                    'Drum Production',
               ),
 
               const SizedBox(height: 30),
