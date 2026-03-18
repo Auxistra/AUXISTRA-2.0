@@ -1,9 +1,6 @@
-// Import Flutter material UI package
 import 'package:flutter/material.dart';
 
-// Main screen to display detailed information about a track
 class TrackDeepInfoScreen extends StatelessWidget {
-  // Track object passed to the screen
   final TrackInfo track;
 
   const TrackDeepInfoScreen({
@@ -14,13 +11,10 @@ class TrackDeepInfoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Dark theme background
       backgroundColor: Colors.black,
-
-      // Top AppBar
       appBar: AppBar(
         backgroundColor: Colors.black,
-        elevation: 0, // Flat design (no shadow)
+        elevation: 0,
         title: const Text(
           "Track Info",
           style: TextStyle(
@@ -29,8 +23,6 @@ class TrackDeepInfoScreen extends StatelessWidget {
           ),
         ),
       ),
-
-      // Scrollable body to avoid overflow
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(
           horizontal: 24,
@@ -40,9 +32,7 @@ class TrackDeepInfoScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // ===== Title Section =====
-
-            // Track title
+            // Title Section
             Text(
               track.title,
               style: const TextStyle(
@@ -50,10 +40,7 @@ class TrackDeepInfoScreen extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-
             const SizedBox(height: 8),
-
-            // Artist name
             Text(
               track.artist,
               style: TextStyle(
@@ -64,8 +51,7 @@ class TrackDeepInfoScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            // ===== Core Track Metrics =====
-
+            // Core Metrics
             _InfoBlock(
               label: "Duration",
               value: track.duration,
@@ -81,17 +67,16 @@ class TrackDeepInfoScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            // ===== Audio Technical Details =====
-
+            // Audio Details
             const _SectionHeader(title: "Audio"),
             const SizedBox(height: 16),
 
             _InfoBlock(
-              label: "BPM", // Beats Per Minute
+              label: "BPM",
               value: track.bpm,
             ),
             _InfoBlock(
-              label: "Key", // Musical key
+              label: "Key",
               value: track.key,
             ),
             _InfoBlock(
@@ -101,8 +86,7 @@ class TrackDeepInfoScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            // ===== Credits Section =====
-
+            // Credits
             const _SectionHeader(title: "Credits"),
             const SizedBox(height: 16),
 
@@ -125,7 +109,6 @@ class TrackDeepInfoScreen extends StatelessWidget {
   }
 }
 
-// Reusable widget for section headers (e.g., "Audio", "Credits")
 class _SectionHeader extends StatelessWidget {
   final String title;
 
@@ -144,7 +127,6 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// Reusable widget for displaying label-value pairs
 class _InfoBlock extends StatelessWidget {
   final String label;
   final String value;
@@ -158,11 +140,9 @@ class _InfoBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Label text (uppercase, smaller font)
           Text(
             label.toUpperCase(),
             style: TextStyle(
@@ -171,10 +151,7 @@ class _InfoBlock extends StatelessWidget {
               letterSpacing: 1.1,
             ),
           ),
-
           const SizedBox(height: 6),
-
-          // Value text (main content)
           Text(
             value,
             style: const TextStyle(
@@ -188,7 +165,6 @@ class _InfoBlock extends StatelessWidget {
   }
 }
 
-// Data model class representing all track metadata
 class TrackInfo {
   final String title;
   final String artist;
@@ -202,7 +178,6 @@ class TrackInfo {
   final String writers;
   final String label;
 
-  // Constructor with required fields
   TrackInfo({
     required this.title,
     required this.artist,
