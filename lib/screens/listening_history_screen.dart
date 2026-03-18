@@ -66,7 +66,15 @@ class _HistoryItem extends StatelessWidget {
       child: Row(
         children: [
 
-          Artwork(size: 48),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade800,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.music_note, color: Colors.white30),
+          ),
 
           const SizedBox(width: 14),
 
