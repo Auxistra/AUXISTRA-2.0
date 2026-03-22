@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -9,124 +12,197 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
+  bool _isLoading = false;
+  String? _errorMessage;
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final nameController = TextEditingController();
+
+  Future<void> _authenticate() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // For demo purposes, skip Firebase auth
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('userEmail', emailController.text.trim());
+      await prefs.setString('userName', nameController.text.trim().isNotEmpty
+          ? nameController.text.trim()
+          : 'Demo User');
+
+      // Mock sync with backend
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:3000/api/auth/sync'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'uid': 'demo_user',
+          'email': emailController.text.trim(),
+          'displayName': nameController.text.trim().isNotEmpty
+              ? nameController.text.trim()
+              : 'Demo User',
+        }),
+      );
+
+      // Always proceed for demo
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/main');
+      }
+    } catch (e) {
+      // If backend not running, still proceed
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/main');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: 28,
-              vertical: 40,
+              horizontal: 32,
+              vertical: 48,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                const SizedBox(height: 40),
-
-                /// Title
+                const SizedBox(height: 64),
                 Text(
                   _isLogin ? 'Sign In' : 'Create Account',
                   style: const TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
+                    fontSize: 42,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -1.2,
+                    color: Colors.white,
                   ),
                 ),
-
-                const SizedBox(height: 8),
-
+                const SizedBox(height: 12),
                 Text(
                   _isLogin
                       ? 'Access your music and mixes'
                       : 'Start your music journey',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey.shade600,
+                    fontSize: 18,
+                    color: Colors.grey.shade400,
                   ),
                 ),
-
-                const SizedBox(height: 48),
-
-                /// Email Field
+                const SizedBox(height: 64),
                 TextField(
                   controller: emailController,
-                  style: const TextStyle(fontSize: 17),
+                  style: const TextStyle(fontSize: 17, color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'Email',
+                    hintStyle: TextStyle(color: Colors.grey.shade600),
                     contentPadding: const EdgeInsets.symmetric(
-                      vertical: 18,
-                      horizontal: 16,
+                      vertical: 20,
+                      horizontal: 20,
                     ),
                     filled: true,
-                    fillColor: const Color(0xFFF2F2F7),
+                    fillColor: const Color(0xFF1C1C1E),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 14),
-
-                /// Password Field
+                const SizedBox(height: 16),
                 TextField(
                   controller: passwordController,
                   obscureText: true,
-                  style: const TextStyle(fontSize: 17),
+                  style: const TextStyle(fontSize: 17, color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'Password',
+                    hintStyle: TextStyle(color: Colors.grey.shade600),
                     contentPadding: const EdgeInsets.symmetric(
-                      vertical: 18,
-                      horizontal: 16,
+                      vertical: 20,
+                      horizontal: 20,
                     ),
                     filled: true,
-                    fillColor: const Color(0xFFF2F2F7),
+                    fillColor: const Color(0xFF1C1C1E),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 32),
-
-                /// Primary Button
+                if (!_isLogin)
+                  Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: nameController,
+                        style: const TextStyle(fontSize: 17, color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Display Name',
+                          hintStyle: TextStyle(color: Colors.grey.shade600),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 20,
+                            horizontal: 20,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFF1C1C1E),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 40),
                 SizedBox(
-                  height: 54,
+                  width: double.infinity,
+                  height: 60,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context)
-                          .pushReplacementNamed('/main');
-                    },
+                    onPressed: _isLoading ? null : _authenticate,
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: Colors.black,
+                      backgroundColor: const Color(0xFF1826F8),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: Text(
-                      _isLogin ? 'Sign In' : 'Sign Up',
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          )
+                        : Text(
+                            _isLogin ? 'Sign In' : 'Sign Up',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
-
-                const SizedBox(height: 18),
-
-                /// Switch Mode
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    _errorMessage!,
+                    style: TextStyle(
+                      color: Colors.red.shade400,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 24),
                 Center(
                   child: TextButton(
                     onPressed: () {
@@ -135,21 +211,34 @@ class _AuthScreenState extends State<AuthScreen> {
                       });
                     },
                     style: TextButton.styleFrom(
-                      foregroundColor: Colors.black,
+                      foregroundColor: Colors.white,
                     ),
                     child: Text(
                       _isLogin
                           ? 'Create an account'
                           : 'Already have an account? Sign In',
                       style: const TextStyle(
-                        fontSize: 15,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
+                        color: Color(0xFF1826F8),
                       ),
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 30),
+                const SizedBox(height: 12),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pushReplacementNamed('/main'),
+                    child: const Text(
+                      'Demo Mode (Skip Auth)',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 48),
               ],
             ),
           ),
