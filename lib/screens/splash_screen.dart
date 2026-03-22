@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,29 +12,22 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(seconds: 2),
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
-      ),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.8, curve: Curves.elasticOut),
-      ),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeIn,
+    ));
 
     _animationController.forward();
   }
@@ -49,102 +43,87 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       backgroundColor: Colors.black,
       body: Container(
-        width: double.infinity,
-        height: double.infinity,
         decoration: const BoxDecoration(
-          color: Colors.black,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1826F8),
+              Colors.black,
+            ],
+          ),
         ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Suble background glow
-            Positioned(
-              top: -100,
-              child: Container(
-                width: 400,
-                height: 400,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFF1826F8).withOpacity(0.15),
-                      Colors.transparent,
+        child: Center(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // App Logo/Icon
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1826F8).withOpacity(0.5),
+                        blurRadius: 30,
+                        spreadRadius: 5,
+                      ),
                     ],
                   ),
-                ),
-              ),
-            ),
-
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // The App Icon
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF1826F8).withOpacity(0.3),
-                            blurRadius: 30,
-                            spreadRadius: 5,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(28),
-                        child: Image.asset(
-                          'assets/icons/app_icon.png',
-                          fit: BoxFit.cover,
-                          // Fallback in case the image is missing
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: const Color(0xFF1C1C1E),
-                            child: const Icon(
-                              Icons.music_note_rounded,
-                              size: 60,
-                              color: Color(0xFF1826F8),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    const Text(
-                      'AUXISTRA',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 10,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Loading indicator at bottom
-            Positioned(
-              bottom: 60,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white24),
+                  child: const Icon(
+                    Icons.music_note,
+                    size: 60,
+                    color: Color(0xFF1826F8),
                   ),
                 ),
-              ),
+                const SizedBox(height: 32),
+                // App Name
+                const Text(
+                  'AUXISTRA',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Tagline
+                Text(
+                  'Music Streaming & Remixing',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white.withOpacity(0.8),
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 64),
+                // Loading Indicator
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.white.withOpacity(0.8),
+                    ),
+                    strokeWidth: 3,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Loading...',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withOpacity(0.6),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

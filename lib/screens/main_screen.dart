@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui';
 import '../providers/music_provider.dart';
 import 'home_screen.dart';
 import 'search_screen.dart';
 import 'library_screen.dart';
 import 'artist_screen.dart';
-import 'song_detail_screen_v2.dart';
+import 'player_screen.dart';
+import 'settings_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -25,128 +25,75 @@ class _MainScreenState extends State<MainScreen> {
     ArtistScreen(),
   ];
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Safety check: ensure context is ready before fetching
+    Future.microtask(() {
+      if (mounted) {
+        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+        musicProvider.fetchSongs();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<MusicProvider>(context);
-    final activeColor = provider.activeColor;
-    final currentSong = provider.currentSong;
-
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        title: const Text('AUXISTRA', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            ),
+          ),
+        ],
+      ),
       body: Stack(
         children: [
-          // 1. LIQUID GLASS BACKGROUND SOURCE (The Album Art)
-          if (currentSong != null && currentSong.albumArt.isNotEmpty)
-            Positioned.fill(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 1000),
-                child: Image.network(
-                  currentSong.albumArt,
-                  key: ValueKey(currentSong.id),
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                ),
-              ),
-            ),
-
-          // 2. CONSISTENT GLASS CLARITY LAYER (BackdropFilter)
-          // Using a lower sigma (15) for higher clarity as requested
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.1),
-                      Colors.black.withOpacity(0.7),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // 3. AMBIENT THEME BLOOM (Always matches active song)
-          AnimatedContainer(
-            duration: const Duration(seconds: 1),
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: const Alignment(0.0, -0.5),
-                radius: 1.5,
-                colors: [
-                  activeColor.withOpacity(0.15),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-
-          // 4. CORE CONTENT
-          IndexedStack(
-            index: _selectedIndex,
-            children: _screens,
-          ),
-
-          // 5. MINI PLAYER
+          _screens[_selectedIndex],
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            child: _buildStylishMiniPlayer(context, provider, activeColor),
+            child: _buildMiniPlayer(context),
           ),
         ],
       ),
-      bottomNavigationBar: _buildStylishNavBar(activeColor),
-    );
-  }
-
-  Widget _buildStylishNavBar(Color activeColor) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.2),
-        border: Border(top: BorderSide(color: activeColor.withOpacity(0.2), width: 0.5)),
-      ),
-      child: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: BottomNavigationBar(
-            currentIndex: _selectedIndex,
-            onTap: (idx) => setState(() => _selectedIndex = idx),
-            selectedItemColor: activeColor,
-            unselectedItemColor: Colors.white.withOpacity(0.3),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            type: BottomNavigationBarType.fixed,
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.search_rounded), label: 'Search'),
-              BottomNavigationBarItem(icon: Icon(Icons.library_music_rounded), label: 'Library'),
-              BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Artist'),
-            ],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: const Color(0xFF121212),
+        type: BottomNavigationBarType.fixed,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_filled),
+            label: 'Home',
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStylishMiniPlayer(BuildContext context, MusicProvider provider, Color activeColor) {
-    final song = provider.currentSong;
-    if (song == null) return const SizedBox.shrink();
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (context, anim, _) => SongDetailScreenV2(
-              songId: song.id,
-              songTitle: song.title,
-              artistName: song.artist,
-            ),
-            transitionsBuilder: (context, anim, _, child) => FadeTransition(opacity: anim, child: child),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.library_music),
+            label: 'Library',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Artist',
           ),
         );
       },
@@ -222,6 +169,89 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMiniPlayer(BuildContext context) {
+    return Consumer<MusicProvider>(
+      builder: (context, musicProvider, child) {
+        final currentSong = musicProvider.currentSong;
+        if (currentSong == null) return const SizedBox.shrink();
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => PlayerScreen(
+                  songTitle: currentSong.title,
+                  artistName: currentSong.artist,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            height: 64,
+            margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1C1C1E),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 15,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    color: Colors.grey[800],
+                    child: const Icon(Icons.music_note, color: Colors.white24),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        currentSong.title,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        currentSong.artist,
+                        style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    musicProvider.isPlaying ? Icons.pause : Icons.play_arrow,
+                    color: Colors.white,
+                  ),
+                  onPressed: () => musicProvider.togglePlay(),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.skip_next, color: Colors.white),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
