@@ -95,7 +95,79 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.person),
             label: 'Artist',
           ),
-        ],
+        );
+      },
+      child: Container(
+        height: 76,
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: activeColor.withOpacity(0.3)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Hero(
+                    tag: 'art_${song.id}',
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        image: song.albumArt.isNotEmpty
+                            ? DecorationImage(image: NetworkImage(song.albumArt), fit: BoxFit.cover)
+                            : null,
+                        color: Colors.black,
+                        border: Border.all(color: activeColor.withOpacity(0.5), width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: activeColor.withOpacity(0.3), blurRadius: 10)
+                        ],
+                      ),
+                      child: song.albumArt.isEmpty
+                          ? const Icon(Icons.music_note, color: Colors.white24)
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          song.title,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          song.artist,
+                          style: TextStyle(color: activeColor.withOpacity(0.9), fontSize: 12, fontWeight: FontWeight.w600),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      provider.isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
+                      color: activeColor, // Changed from white to activeColor for theme consistency
+                      size: 40,
+                    ),
+                    onPressed: () => provider.togglePlay(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
