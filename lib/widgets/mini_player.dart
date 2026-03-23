@@ -6,48 +6,58 @@ import 'package:flutter/material.dart';
 class MiniPlayer extends StatelessWidget {
   final String title;
   final String artist;
-  final String coverUrl;
+  final String? imageUrl;
   final bool isPlaying;
-  final VoidCallback onPlayPause;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final VoidCallback? onPlayPause;
+  final VoidCallback? onNext;
 
   const MiniPlayer({
     super.key,
     required this.title,
     required this.artist,
-    required this.coverUrl,
+    this.imageUrl,
     required this.isPlaying,
-    required this.onPlayPause,
-    required this.onTap,
+    this.onTap,
+    this.onPlayPause,
+    this.onNext,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return GestureDetector(
-      onTap: onTap, // Opens full player screen
+      onTap: onTap,
       child: Container(
-        height: 70,
+        height: 64,
+        margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.grey.shade900,
-          borderRadius: BorderRadius.circular(16),
+          color: const Color(0xFF1C1C1E),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           children: [
-            /// Song Cover
+            /// Artwork
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                coverUrl,
-                width: 50,
-                height: 50,
-                fit: BoxFit.cover,
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                width: 44,
+                height: 44,
+                color: const Color(0xFF2C2C2C),
+                child: imageUrl != null
+                    ? Image.network(
+                        imageUrl!,
+                        fit: BoxFit.cover,
+                      )
+                    : const Icon(Icons.music_note),
               ),
             ),
 
             const SizedBox(width: 12),
 
-            /// Song Info
+            /// Title + Artist
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -55,24 +65,42 @@ class MiniPlayer extends StatelessWidget {
                 children: [
                   Text(
                     title,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
+
+                  const SizedBox(height: 2),
+
                   Text(
                     artist,
-                    style: const TextStyle(color: Colors.grey),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[500],
+                    ),
                   ),
                 ],
               ),
             ),
 
-            /// Play / Pause Button
+            /// Play / Pause
             IconButton(
               icon: Icon(
                 isPlaying ? Icons.pause : Icons.play_arrow,
+                size: 28,
               ),
               onPressed: onPlayPause,
             ),
+
+            /// Next
+            if (onNext != null)
+              IconButton(
+                icon: const Icon(Icons.skip_next),
+                onPressed: onNext,
+              ),
           ],
         ),
       ),

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-
-// Importing the main tab screens
+import 'package:provider/provider.dart';
+import '../providers/music_provider.dart';
 import 'home_screen.dart';
 import 'search_screen.dart';
 import 'library_screen.dart';
 import 'artist_screen.dart';
+import 'player_screen.dart';
+import 'settings_screen.dart';
 
-/// MainScreen is the root screen after login.
-/// It contains the bottom navigation used to switch between
-/// Home, Search, Library, and Artist tabs.
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -17,11 +16,8 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  /// Stores the currently selected tab index
   int _selectedIndex = 0;
 
-  /// List of screens that correspond to each tab
-  /// Order must match BottomNavigationBar items
   static const List<Widget> _screens = <Widget>[
     HomeScreen(),
     SearchScreen(),
@@ -29,56 +25,233 @@ class _MainScreenState extends State<MainScreen> {
     ArtistScreen(),
   ];
 
-  /// Called when a bottom navigation item is tapped
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index; // Update active tab
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Safety check: ensure context is ready before fetching
+    Future.microtask(() {
+      if (mounted) {
+        final musicProvider = Provider.of<MusicProvider>(context, listen: false);
+        musicProvider.fetchSongs();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Displays the currently selected screen
-      body: SafeArea(
-        child: _screens[_selectedIndex],
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        title: const Text('AUXISTRA', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            ),
+          ),
+        ],
       ),
-
-      /// Bottom Navigation Bar (Main App Navigation)
+      body: Stack(
+        children: [
+          _screens[_selectedIndex],
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildMiniPlayer(context),
+          ),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex, // Active tab
-        onTap: _onItemTapped, // Tab switch handler
-
-        // Color scheme adapted for dark theme music app
-        selectedItemColor: const Color(0xFF1826F8),
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
-
-        backgroundColor: const Color(0xFF2C2C2C),
+        backgroundColor: const Color(0xFF121212),
         type: BottomNavigationBarType.fixed,
-
-        /// Navigation Items
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home_filled),
             label: 'Home',
           ),
-
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: 'Search',
           ),
-
           BottomNavigationBarItem(
             icon: Icon(Icons.library_music),
             label: 'Library',
           ),
-
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Artist',
           ),
-        ],
+        );
+      },
+      child: Container(
+        height: 76,
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: activeColor.withOpacity(0.3)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Hero(
+                    tag: 'art_${song.id}',
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        image: song.albumArt.isNotEmpty
+                            ? DecorationImage(image: NetworkImage(song.albumArt), fit: BoxFit.cover)
+                            : null,
+                        color: Colors.black,
+                        border: Border.all(color: activeColor.withOpacity(0.5), width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: activeColor.withOpacity(0.3), blurRadius: 10)
+                        ],
+                      ),
+                      child: song.albumArt.isEmpty
+                          ? const Icon(Icons.music_note, color: Colors.white24)
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          song.title,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          song.artist,
+                          style: TextStyle(color: activeColor.withOpacity(0.9), fontSize: 12, fontWeight: FontWeight.w600),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      provider.isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
+                      color: activeColor, // Changed from white to activeColor for theme consistency
+                      size: 40,
+                    ),
+                    onPressed: () => provider.togglePlay(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _buildMiniPlayer(BuildContext context) {
+    return Consumer<MusicProvider>(
+      builder: (context, musicProvider, child) {
+        final currentSong = musicProvider.currentSong;
+        if (currentSong == null) return const SizedBox.shrink();
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => PlayerScreen(
+                  songTitle: currentSong.title,
+                  artistName: currentSong.artist,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            height: 64,
+            margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1C1C1E),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 15,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    color: Colors.grey[800],
+                    child: const Icon(Icons.music_note, color: Colors.white24),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        currentSong.title,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        currentSong.artist,
+                        style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    musicProvider.isPlaying ? Icons.pause : Icons.play_arrow,
+                    color: Colors.white,
+                  ),
+                  onPressed: () => musicProvider.togglePlay(),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.skip_next, color: Colors.white),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
