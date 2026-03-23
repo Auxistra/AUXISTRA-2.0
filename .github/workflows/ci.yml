@@ -1,4 +1,4 @@
-name: CI
+name: Full CI (Backend + Optional Frontend)
 
 on:
   push:
@@ -11,11 +11,11 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20]  # Only one Node.js version
-        flutter-version: ['3.19.0']  # Flutter stable (update if needed)
+        node-version: [20]
+        flutter-version: ['3.19.0']
 
     steps:
-      # 1️⃣ Checkout code
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -28,45 +28,55 @@ jobs:
       # 3️⃣ Install backend dependencies
       - name: Install backend dependencies
         run: |
-          if [ -f backend/package.json ]; then
-            cd backend
+          if [ -f package.json ]; then
             npm install --legacy-peer-deps
+          else
+            echo "No backend package.json found, skipping Node.js steps"
           fi
 
-      # 4️⃣ Run backend tests (optional)
+      # 4️⃣ Run backend tests
       - name: Run backend tests
         run: |
-          if [ -f backend/package.json ]; then
-            cd backend
+          if [ -f package.json ]; then
             npm test || echo "No backend tests found"
           fi
 
-      # 5️⃣ Setup Flutter
+      # 5️⃣ Optional: Frontend checks (Flutter)
+      - name: Check if frontend exists
+        id: check_frontend
+        run: |
+          if [ -d "frontend" ]; then
+            echo "frontend_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup Flutter
+        if: steps.check_frontend.outputs.frontend_exists == 'true'
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ matrix.flutter-version }}
 
-      # 6️⃣ Install Flutter dependencies
       - name: Install Flutter dependencies
+        if: steps.check_frontend.outputs.frontend_exists == 'true'
         run: |
           cd frontend
           flutter pub get
 
-      # 7️⃣ Analyze Flutter code
       - name: Analyze Flutter code
+        if: steps.check_frontend.outputs.frontend_exists == 'true'
         run: |
           cd frontend
-          flutter analyze || true  # avoid CI fail due to lint errors
+          flutter analyze || true
 
-      # 8️⃣ Run Flutter tests
       - name: Run Flutter tests
+        if: steps.check_frontend.outputs.frontend_exists == 'true'
         run: |
           cd frontend
           flutter test || echo "No Flutter tests or tests failed"
 
-      # 9️⃣ Optional: Build APK (for verification)
-      - name: Build Flutter APK
+      - name: Build Flutter APK (optional)
+        if: steps.check_frontend.outputs.frontend_exists == 'true'
         run: |
           cd frontend
           flutter build apk --debug
