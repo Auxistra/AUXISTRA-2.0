@@ -47,3 +47,12 @@ CREATE TABLE collaborations (
     status VARCHAR(50) DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Transactions Table for revenue tracking
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    artist_id VARCHAR(255) REFERENCES users(uid),
+    amount INTEGER,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
