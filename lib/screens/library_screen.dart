@@ -1,142 +1,191 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/music_provider.dart';
+import 'song_detail_screen_v2.dart';
 import 'stem_settings_screen.dart';
 
 class LibraryScreen extends StatelessWidget {
   const LibraryScreen({super.key});
 
-  static const Color primaryBlue = Color(0xFF1826F8);
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text(
-          'Library',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 28,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: Colors.black,
-        elevation: 0,
-        actions: [
-          TextButton(
-            onPressed: () {
-              // Navigation to Stems & Remix Settings
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const StemSettingsScreen()),
-              );
-            },
-            child: const Text(
-              'Stems',
-              style: TextStyle(color: primaryBlue, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(width: 10),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.only(bottom: 24, top: 6),
-        children: [
-          _buildLibraryItem(context, Icons.playlist_play, 'Playlists'),
-          _buildLibraryItem(context, Icons.music_note, 'Songs'),
-          _buildLibraryItem(context, Icons.album, 'Albums'),
-          _buildLibraryItem(context, Icons.person, 'Artists'),
-          _buildLibraryItem(context, Icons.download_done, 'Downloaded'),
+    final provider = Provider.of<MusicProvider>(context);
+    final songs = provider.recentSongs;
+    final activeColor = provider.activeColor;
 
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 32, 16, 8),
-            child: Text(
-              'Recently Added',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: CustomScrollView(
+        slivers: [
+          /// ===== APP BAR =====
+          SliverAppBar(
+            backgroundColor: Colors.transparent,
+            expandedHeight: 120,
+            floating: true,
+            pinned: true,
+            elevation: 0,
+            flexibleSpace: const FlexibleSpaceBar(
+              titlePadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              title: Text(
+                'Library',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 28,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            actions: [
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const StemSettingsScreen(),
+                    ),
+                  );
+                },
+                icon: Icon(Icons.tune_rounded, color: activeColor),
+                label: Text(
+                  'Stems',
+                  style: TextStyle(color: activeColor),
+                ),
+              ),
+            ],
+          ),
+
+          /// ===== LIBRARY OPTIONS =====
+          SliverList(
+            delegate: SliverChildListDelegate([
+              _buildLibraryItem(context, Icons.playlist_play, 'Playlists', activeColor),
+              _buildLibraryItem(context, Icons.music_note, 'Songs', activeColor),
+              _buildLibraryItem(context, Icons.album, 'Albums', activeColor),
+              _buildLibraryItem(context, Icons.person, 'Artists', activeColor),
+              _buildLibraryItem(context, Icons.download, 'Downloaded', activeColor),
+
+              const SizedBox(height: 20),
+
+              /// SECTION TITLE
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Recently Played',
+                  style: TextStyle(
+                    color: activeColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ]),
+          ),
+
+          /// ===== SONG GRID =====
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 0.75,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final song = songs[index];
+                  final isPlaying = provider.currentSong?.id == song.id;
+
+                  return GestureDetector(
+                    onTap: () {
+                      provider.playSong(song);
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SongDetailScreenV2(
+                            songId: song.id,
+                            songTitle: song.title,
+                            artistName: song.artist,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        /// Album Cover
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              image: song.albumArt.isNotEmpty
+                                  ? DecorationImage(
+                                      image: NetworkImage(song.albumArt),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                              color: Colors.grey[900],
+                              border: Border.all(
+                                color: isPlaying ? activeColor : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                            child: song.albumArt.isEmpty
+                                ? const Icon(Icons.music_note, color: Colors.white24)
+                                : null,
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        /// Song Title
+                        Text(
+                          song.title,
+                          style: TextStyle(
+                            color: isPlaying ? activeColor : Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+
+                        /// Artist Name
+                        Text(
+                          song.artist,
+                          style: const TextStyle(color: Colors.grey),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                childCount: songs.length,
               ),
             ),
           ),
 
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.8,
-            ),
-            itemCount: 4,
-            itemBuilder: (context, index) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1C1C1E),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.album, size: 60, color: Colors.white10),
-                      ),
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      'Album Name',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const Text(
-                    'Artist Name',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
       ),
     );
   }
 
-  Widget _buildLibraryItem(BuildContext context, IconData icon, String title) {
+  /// ===== LIBRARY ITEM BUILDER =====
+  Widget _buildLibraryItem(
+    BuildContext context,
+    IconData icon,
+    String title,
+    Color activeColor,
+  ) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: primaryBlue,
-      ),
+      leading: Icon(icon, color: activeColor),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 18, color: Colors.white),
+        style: const TextStyle(color: Colors.white),
       ),
-      trailing: const Icon(
-        Icons.arrow_forward_ios,
-        size: 16,
-        color: Colors.grey,
-      ),
-      onTap: () {
-        if (title == 'Songs') {
-           // Example specific navigation
-        }
-      },
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+      onTap: () {},
     );
   }
 }
