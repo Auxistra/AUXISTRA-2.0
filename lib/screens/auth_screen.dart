@@ -267,6 +267,18 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                       ),
                     ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          )
+                        : Text(
+                            _isLogin ? 'Sign In' : 'Sign Up',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                   const SizedBox(height: 12),
                   Center(
