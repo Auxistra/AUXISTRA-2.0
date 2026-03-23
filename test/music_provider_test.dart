@@ -1,4 +1,3 @@
-
 import 'package:auxistra/providers/music_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
