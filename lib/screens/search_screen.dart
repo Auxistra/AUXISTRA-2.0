@@ -9,133 +9,179 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final musicProvider = Provider.of<MusicProvider>(context);
+    final activeColor = musicProvider.activeColor;
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              const Text(
+      backgroundColor: Colors.transparent, // Made transparent for glass effect
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            backgroundColor: Colors.transparent, // Made transparent
+            expandedHeight: 140,
+            floating: true,
+            pinned: true,
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              title: const Text(
                 'Search',
                 style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
                   color: Colors.white,
+                  letterSpacing: 1.2,
                 ),
               ),
-              const SizedBox(height: 20),
-              TextField(
-                onChanged: (value) {
-                  if (value.isNotEmpty) {
-                    musicProvider.searchSongs(value);
-                  } else {
-                    musicProvider.updateSearch('');
-                  }
-                },
-                style: const TextStyle(fontSize: 17, color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Artists, Songs, Lyrics...',
-                  hintStyle: TextStyle(color: Colors.grey.shade500),
-                  prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
-                  filled: true,
-                  fillColor: const Color(0xFF1C1C1E),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: musicProvider.searchedSongs.isEmpty
-                    ? _buildBrowseGrid(context)
-                    : _buildSearchResults(context, musicProvider),
-              ),
-            ],
+            ),
           ),
-        ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: Column(
+                children: [
+                  TextField(
+                    onChanged: (value) {
+                      musicProvider.updateSearch(value);
+                    },
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Artists, Songs, Lyrics...',
+                      hintStyle: TextStyle(color: Colors.grey.shade600),
+                      prefixIcon: Icon(Icons.search_rounded, color: activeColor),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.05), // Glass-like fill
+                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(color: activeColor.withOpacity(0.1), width: 1),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(color: activeColor.withOpacity(0.5), width: 1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (musicProvider.searchedSongs.isEmpty)
+            _buildBrowseGrid(activeColor)
+          else
+            _buildSearchResults(context, musicProvider),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
       ),
     );
   }
 
   Widget _buildSearchResults(BuildContext context, MusicProvider provider) {
-    return ListView.builder(
-      itemCount: provider.searchedSongs.length,
-      itemBuilder: (context, index) {
-        final song = provider.searchedSongs[index];
-        return ListTile(
-          onTap: () {
-            provider.playSong(song);
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => PlayerScreen(
-                  songTitle: song.title,
-                  artistName: song.artist,
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final song = provider.searchedSongs[index];
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.03),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.05)),
+              ),
+              child: ListTile(
+                onTap: () {
+                  provider.playSong(song);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => PlayerScreen(
+                        songTitle: song.title,
+                        artistName: song.artist,
+                      ),
+                    ),
+                  );
+                },
+                contentPadding: const EdgeInsets.all(8),
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    color: const Color(0xFF1C1C1E),
+                    child: song.albumArt.isNotEmpty
+                        ? Image.network(song.albumArt, fit: BoxFit.cover)
+                        : const Icon(Icons.music_note, color: Colors.white10),
+                  ),
+                ),
+                title: Text(
+                  song.title,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                subtitle: Text(
+                  song.artist,
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                ),
+                trailing: Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey.shade800, size: 16),
+              ),
+            );
+          },
+          childCount: provider.searchedSongs.length,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBrowseGrid(Color activeColor) {
+    final categories = ['Pop', 'Rock', 'Hip-Hop', 'Electronic', 'Jazz', 'Classical'];
+    final colors = [
+      const Color(0xFFE8115B),
+      const Color(0xFF8D67AB),
+      const Color(0xFF1E3264),
+      const Color(0xFFF037A5),
+      const Color(0xFF19E68C),
+      const Color(0xFF27856A)
+    ];
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      sliver: SliverGrid(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 1.6,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: [colors[index].withOpacity(0.5), colors[index].withOpacity(0.7)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Text(
+                categories[index],
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
                 ),
               ),
             );
           },
-          leading: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1C1C1E),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.music_note, color: Colors.white24),
-          ),
-          title: Text(song.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          subtitle: Text(song.artist, style: const TextStyle(color: Colors.grey)),
-        );
-      },
-    );
-  }
-
-  Widget _buildBrowseGrid(BuildContext context) {
-    final categories = ['Pop', 'Rock', 'Hip-Hop', 'Electronic', 'Jazz', 'Classical'];
-    final colors = [Colors.purple, Colors.red, Colors.orange, Colors.blue, Colors.green, Colors.teal];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Browse All', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-        const SizedBox(height: 16),
-        Expanded(
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 14,
-              mainAxisSpacing: 14,
-              childAspectRatio: 1.6,
-            ),
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              return Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [colors[index].withOpacity(0.8), colors[index]],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Text(
-                    categories[index],
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-              );
-            },
-          ),
+          childCount: categories.length,
         ),
-      ],
+      ),
     );
   }
 }
+
